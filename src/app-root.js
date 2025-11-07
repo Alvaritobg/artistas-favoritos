@@ -26,11 +26,9 @@ export class AppRoot extends LitElement {
   }
 
   delFavorite(artist) {
-    console.log(artist);
     this.favorites = this.favorites.filter(
       (a) => a.idArtist !== artist.idArtist
     );
-    console.log(this.favorites);
     localStorage.setItem('favorites', JSON.stringify(this.favorites));
   }
 

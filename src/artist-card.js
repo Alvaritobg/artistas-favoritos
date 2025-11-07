@@ -30,7 +30,7 @@ class ArtistCard extends LitElement {
   };
 
   render() {
-    const { strArtist, strArtistThumb, strGenre, idArtist } = this.artist;
+    const { strArtist, strArtistThumb, strGenre } = this.artist;
     return html`
       <div class="card">
         <img
@@ -38,9 +38,7 @@ class ArtistCard extends LitElement {
           alt=${strArtist} />
         <h3>${strArtist}</h3>
         <p>${strGenre || 'Sin género'}</p>
-        <button @click=${() => this.addToFavorites()}>
-          ❤️ Añadir a favoritos
-        </button>
+
         <button @click=${() => this.delFromFavorites()}>
           ❌ Quitar de favoritos
         </button>
@@ -48,15 +46,6 @@ class ArtistCard extends LitElement {
     `;
   }
 
-  addToFavorites() {
-    this.dispatchEvent(
-      new CustomEvent('add-favorite', {
-        detail: this.artist,
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
   delFromFavorites() {
     this.dispatchEvent(
       new CustomEvent('del-favorite', {

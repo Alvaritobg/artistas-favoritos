@@ -28,17 +28,19 @@ class FavoritesList extends LitElement {
     return html`
       <h2>❤️ Favoritos</h2>
       <ul>
-        ${this.favorites.map(
-          (a) => html`
-            <artist-card
-              .artist=${a}
-              @add-favorite=${(e) =>
-                this.dispatchEvent(
-                  new CustomEvent('add-favorite', { detail: artist }),
-                  new CustomEvent('del-favorite', { detail: artist })
-                )}></artist-card>
-          `
-        )}
+        ${this.favorites.length === 0
+          ? html`<p>No hay artistas favoritos</p>`
+          : this.favorites.map(
+              (a) => html`
+                <artist-card
+                  .artist=${a}
+                  @add-favorite=${(e) =>
+                    this.dispatchEvent(
+                      new CustomEvent('add-favorite', { detail: artist }),
+                      new CustomEvent('del-favorite', { detail: artist })
+                    )}></artist-card>
+              `
+            )}
       </ul>
     `;
   }
