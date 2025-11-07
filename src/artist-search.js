@@ -51,21 +51,31 @@ class ArtistSearch extends LitElement {
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 1rem;
     }
+    .no-results {
+      text-align: center;
+      color: #e91b1bff;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
   `;
 
   static properties = {
     query: { type: String },
     artists: { type: Array },
+    searched: { type: Boolean },
   };
 
   constructor() {
     super();
     this.query = '';
     this.artists = [];
+    this.searched = false;
   }
 
   async searchArtists() {
     if (!this.query) return;
+
+    this.searched = true;
     try {
       const url = `/api/v1/json/2/search.php?s=${encodeURIComponent(
         this.query
@@ -84,23 +94,35 @@ class ArtistSearch extends LitElement {
       <div class="search">
         <input
           placeholder="Buscar artista..."
-          @input=${(e) => (this.query = e.target.value)}
+          @input=${(e) => {
+            this.query = e.target.value;
+            // hide "no results" message while the user is typing
+            this.searched = false;
+            // if input cleared, also clear previous results
+            if (!this.query) this.artists = [];
+          }}
           @keyup=${(e) => e.key === 'Enter' && this.searchArtists()} />
         <button class="button" @click=${this.searchArtists}>🔍 Buscar</button>
       </div>
 
-      <div class="results">
-        ${this.artists.map(
-          (artist) => html`
-            <artist-card
-              .artist=${artist}
-              @add-favorite=${(e) =>
-                this.dispatchEvent(
-                  new CustomEvent('add-favorite', { detail: artist })
-                )}></artist-card>
-          `
-        )}
-      </div>
+      ${this.searched
+        ? this.artists.length
+          ? html` <div class="results">
+              ${this.artists.map(
+                (artist) => html`
+                  <artist-card
+                    .artist=${artist}
+                    @add-favorite=${(e) =>
+                      this.dispatchEvent(
+                        new CustomEvent('add-favorite', { detail: artist })
+                      )}></artist-card>
+                `
+              )}
+            </div>`
+          : html`<p class="no-results">
+              No se encontraron coincidencias para "${this.query}"
+            </p>`
+        : ''}
     `;
   }
 }
