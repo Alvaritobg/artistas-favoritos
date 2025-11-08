@@ -33,27 +33,8 @@ class ArtistSearch extends LitElement {
       box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.1);
     }
 
-    .search .button {
-      font-size: 1rem;
-      background: #0077ff;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      display: flex;
-      align-items: center;
-      white-space: nowrap;
-    }
-
-    .search .button:hover {
-      background: #0066dd;
-    }
-
     .results {
       display: none;
-      /* kept for compatibility if needed */
     }
 
     .no-results {
@@ -140,11 +121,35 @@ class ArtistSearch extends LitElement {
     this.artists = [];
     this.searched = false;
     this.loading = false;
+    this._debounceTimeout = null;
+    this._handleClickOutside = this._handleClickOutside.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('mousedown', this._handleClickOutside);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('mousedown', this._handleClickOutside);
+    super.disconnectedCallback();
+  }
+
+  _handleClickOutside(e) {
+    if (!this.shadowRoot) return;
+    const searchBox = this.shadowRoot.querySelector('.search');
+    const dropdown = this.shadowRoot.querySelector('.dropdown');
+    if (searchBox && !searchBox.contains(e.target) && dropdown) {
+      this.clearSearch();
+    }
   }
 
   async searchArtists() {
-    if (!this.query) return;
-
+    if (!this.query) {
+      this.artists = [];
+      this.searched = false;
+      return;
+    }
     this.searched = true;
     this.loading = true;
     try {
@@ -166,9 +171,21 @@ class ArtistSearch extends LitElement {
     this.query = '';
     this.searched = false;
     this.artists = [];
-    // También limpiar el input por si acaso
     const input = this.shadowRoot.querySelector('input');
     if (input) input.value = '';
+  }
+
+  _onInput(e) {
+    this.query = e.target.value;
+    if (this._debounceTimeout) clearTimeout(this._debounceTimeout);
+    if (!this.query) {
+      this.artists = [];
+      this.searched = false;
+      return;
+    }
+    this._debounceTimeout = setTimeout(() => {
+      this.searchArtists();
+    }, 400); // 400ms debounce
   }
 
   render() {
@@ -177,13 +194,7 @@ class ArtistSearch extends LitElement {
         <input
           .value=${this.query}
           placeholder="Buscar artista..."
-          @input=${(e) => {
-            this.query = e.target.value;
-            this.searched = false;
-            if (!this.query) this.artists = [];
-          }}
-          @keyup=${(e) => e.key === 'Enter' && this.searchArtists()} />
-        <button class="button" @click=${this.searchArtists}>🔍 Buscar</button>
+          @input=${this._onInput.bind(this)} />
       </div>
 
       ${this.searched
