@@ -137,9 +137,10 @@ class ArtistSearch extends LitElement {
 
   _handleClickOutside(e) {
     if (!this.shadowRoot) return;
-    const searchBox = this.shadowRoot.querySelector('.search');
-    const dropdown = this.shadowRoot.querySelector('.dropdown');
-    if (searchBox && !searchBox.contains(e.target) && dropdown) {
+    // Cerrar solo si el clic ocurre fuera de todo el componente
+    const host = this;
+    const path = e.composedPath();
+    if (!path.includes(host)) {
       this.clearSearch();
     }
   }
